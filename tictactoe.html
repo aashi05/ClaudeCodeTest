@@ -1,0 +1,369 @@
+<title>Tic Tac Toe</title>
+
+<style>
+  :root {
+    --bg: #fafaf8;
+    --fg: #1a1a18;
+    --border: #e0e0dc;
+    --accent: #0066cc;
+    --accent-light: #e6f0ff;
+    --x-color: #0066cc;
+    --o-color: #d9534f;
+    --win-bg: #d4edda;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1a18;
+      --fg: #f5f5f3;
+      --border: #3a3a38;
+      --accent: #4da6ff;
+      --accent-light: #1a3d66;
+      --x-color: #4da6ff;
+      --o-color: #ff6b6b;
+      --win-bg: #1e4620;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #1a1a18;
+    --fg: #f5f5f3;
+    --border: #3a3a38;
+    --accent: #4da6ff;
+    --accent-light: #1a3d66;
+    --x-color: #4da6ff;
+    --o-color: #ff6b6b;
+    --win-bg: #1e4620;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    gap: 2rem;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 500px;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    text-align: center;
+    letter-spacing: -0.5px;
+  }
+
+  .status {
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    height: 2rem;
+    color: var(--fg);
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    width: 100%;
+    aspect-ratio: 1;
+    padding: 1rem;
+    background: var(--bg);
+    border-radius: 0.75rem;
+    border: 2px solid var(--border);
+  }
+
+  .cell {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 0.5rem;
+    font-size: 3rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .cell {
+      background: #2a2a28;
+    }
+  }
+
+  :root[data-theme="dark"] .cell {
+    background: #2a2a28;
+  }
+
+  .cell:hover:not(.disabled) {
+    background: var(--accent-light);
+    transform: scale(1.05);
+  }
+
+  .cell.disabled {
+    cursor: not-allowed;
+  }
+
+  .cell.x {
+    color: var(--x-color);
+  }
+
+  .cell.o {
+    color: var(--o-color);
+  }
+
+  .controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .btn-reset {
+    background: var(--accent);
+    color: white;
+    flex: 1;
+    min-width: 150px;
+  }
+
+  .btn-reset:hover {
+    background: #0052a3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+  }
+
+  .btn-reset:active {
+    transform: translateY(0);
+  }
+
+  .result {
+    text-align: center;
+    margin-top: 0.5rem;
+  }
+
+  .win-message {
+    color: #155724;
+    font-weight: 600;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .win-message {
+      color: #95e1b3;
+    }
+  }
+
+  :root[data-theme="dark"] .win-message {
+    color: #95e1b3;
+  }
+
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 2rem;
+    }
+
+    .cell {
+      font-size: 2.5rem;
+    }
+
+    .board {
+      gap: 0.5rem;
+      padding: 0.75rem;
+    }
+  }
+</style>
+
+<div class="container">
+  <h1>Tic Tac Toe</h1>
+
+  <div class="status" id="status">Your turn (X)</div>
+
+  <div class="board" id="board">
+    <div class="cell" data-index="0"></div>
+    <div class="cell" data-index="1"></div>
+    <div class="cell" data-index="2"></div>
+    <div class="cell" data-index="3"></div>
+    <div class="cell" data-index="4"></div>
+    <div class="cell" data-index="5"></div>
+    <div class="cell" data-index="6"></div>
+    <div class="cell" data-index="7"></div>
+    <div class="cell" data-index="8"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-reset" id="resetBtn">New Game</button>
+  </div>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+  const cells = document.querySelectorAll('.cell');
+  const status = document.getElementById('status');
+  const result = document.getElementById('result');
+  const resetBtn = document.getElementById('resetBtn');
+  let board = Array(9).fill(null);
+  let gameOver = false;
+
+  const winConditions = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ];
+
+  function checkWin(player) {
+    return winConditions.some(condition =>
+      condition.every(index => board[index] === player)
+    );
+  }
+
+  function isBoardFull() {
+    return board.every(cell => cell !== null);
+  }
+
+  function getBestMove() {
+    // Simple minimax-like strategy
+    const emptyIndices = board.map((val, idx) => val === null ? idx : null).filter(val => val !== null);
+
+    // First, try to win
+    for (let index of emptyIndices) {
+      board[index] = 'O';
+      if (checkWin('O')) {
+        board[index] = null;
+        return index;
+      }
+      board[index] = null;
+    }
+
+    // Then, block player from winning
+    for (let index of emptyIndices) {
+      board[index] = 'X';
+      if (checkWin('X')) {
+        board[index] = null;
+        return index;
+      }
+      board[index] = null;
+    }
+
+    // Take center if available
+    if (board[4] === null) return 4;
+
+    // Take corners
+    const corners = [0, 2, 6, 8].filter(idx => board[idx] === null);
+    if (corners.length > 0) return corners[Math.floor(Math.random() * corners.length)];
+
+    // Take any remaining space
+    return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+  }
+
+  function updateDisplay() {
+    cells.forEach((cell, index) => {
+      cell.textContent = board[index] || '';
+      cell.classList.remove('x', 'o', 'disabled');
+      if (board[index] === 'X') {
+        cell.classList.add('x');
+      } else if (board[index] === 'O') {
+        cell.classList.add('o');
+      }
+      if (gameOver || board[index] !== null) {
+        cell.classList.add('disabled');
+      }
+    });
+  }
+
+  function endGame(message) {
+    gameOver = true;
+    status.textContent = message;
+    result.textContent = message;
+    result.classList.add('win-message');
+    updateDisplay();
+  }
+
+  function playerMove(index) {
+    if (board[index] !== null || gameOver) return;
+
+    board[index] = 'X';
+
+    if (checkWin('X')) {
+      endGame('You won! 🎉');
+      return;
+    }
+
+    if (isBoardFull()) {
+      endGame("It's a draw! 🤝");
+      return;
+    }
+
+    status.textContent = 'Computer is thinking...';
+    result.textContent = '';
+    updateDisplay();
+
+    setTimeout(() => {
+      const computerIndex = getBestMove();
+      board[computerIndex] = 'O';
+
+      if (checkWin('O')) {
+        endGame('Computer won! 🤖');
+        return;
+      }
+
+      if (isBoardFull()) {
+        endGame("It's a draw! 🤝");
+        return;
+      }
+
+      status.textContent = 'Your turn (X)';
+      result.textContent = '';
+      updateDisplay();
+    }, 400);
+  }
+
+  function resetGame() {
+    board = Array(9).fill(null);
+    gameOver = false;
+    status.textContent = 'Your turn (X)';
+    result.textContent = '';
+    result.classList.remove('win-message');
+    updateDisplay();
+  }
+
+  cells.forEach((cell, index) => {
+    cell.addEventListener('click', () => playerMove(index));
+  });
+
+  resetBtn.addEventListener('click', resetGame);
+
+  updateDisplay();
+</script>
